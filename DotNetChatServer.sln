@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetChatServer", "DotNetChatServer\DotNetChatServer.csproj", "{E27C2C99-9A82-4B02-86C7-E29107C38EAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetChat", "DotNetChat\DotNetChat.csproj", "{B03A80F9-E614-4CBC-9B23-EB5053C72455}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E27C2C99-9A82-4B02-86C7-E29107C38EAF}.Debug|x86.ActiveCfg = Debug|x86
+		{E27C2C99-9A82-4B02-86C7-E29107C38EAF}.Debug|x86.Build.0 = Debug|x86
+		{E27C2C99-9A82-4B02-86C7-E29107C38EAF}.Release|x86.ActiveCfg = Release|x86
+		{E27C2C99-9A82-4B02-86C7-E29107C38EAF}.Release|x86.Build.0 = Release|x86
+		{B03A80F9-E614-4CBC-9B23-EB5053C72455}.Debug|x86.ActiveCfg = Debug|x86
+		{B03A80F9-E614-4CBC-9B23-EB5053C72455}.Debug|x86.Build.0 = Debug|x86
+		{B03A80F9-E614-4CBC-9B23-EB5053C72455}.Release|x86.ActiveCfg = Release|x86
+		{B03A80F9-E614-4CBC-9B23-EB5053C72455}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
