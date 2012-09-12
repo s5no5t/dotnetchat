@@ -9,46 +9,50 @@ namespace DotNetChatServer
 {
     internal class ChatServer : IDisposable
     {
-        private int _currentMaxId;
-        private List<Member> _member;
-        private NetServer _netServer;
+        private readonly List<Member> _members = new List<Member>();
+        private readonly NetServer _netServer;
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        public bool Running { get; private set; }
-
-        public void Start(string appIdentifier, int port)
+        public ChatServer(string appIdentifier, int port)
         {
-            if (Running)
-                throw new InvalidOperationException("Server is already running.");
-
             var peerConfiguration = new NetPeerConfiguration(appIdentifier)
-                                        {
-                                            AcceptIncomingConnections = true,
-                                            Port = port,
-                                        };
+            {
+                AcceptIncomingConnections = true,
+                Port = port,
+            };
             peerConfiguration.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
 
             _netServer = new NetServer(peerConfiguration);
 
+            MemberLogon += UpdateBuddyLists;
+        }
+
+        private void UpdateBuddyLists(object sender, MemberLogonEventArgs args)
+        {
+            var message = _netServer.CreateMessage();
+            message.Write(args.LoggedOnMember.Name);
+            var recipients = _members.Where(m => m != args.LoggedOnMember).Select(m => m.Connection).ToList();
+
+            if (recipients.Count > 0)
+                _netServer.SendMessage(message, recipients, NetDeliveryMethod.ReliableUnordered, 0);
+        }
+
+        public void Start()
+        {
+            if (_netServer.Status == NetPeerStatus.Starting || _netServer.Status == NetPeerStatus.Running)
+                throw new InvalidOperationException("Server is already running.");
+
             Logger.Info("Starting server.");
-
-            Settings.Default.AppIdentifier = appIdentifier;
-            Settings.Default.Port = port;
-            Settings.Default.Save();
-
-            _member = new List<Member>();
-            _currentMaxId = 1;
 
             _netServer.Start();
 
-            Logger.Info("Server name: '{0}' Port: {1}", Settings.Default.ServerName, port);
-            Running = true;
+            Logger.Info("Server name: '{0}' Port: {1}", Settings.Default.ServerName, _netServer.Port);
         }
 
         public void Stop()
         {
-            if (!Running)
+            if (_netServer.Status != NetPeerStatus.Starting && _netServer.Status != NetPeerStatus.Running)
                 throw new InvalidOperationException("Server is not running.");
 
             Logger.Info("Stopping server.");
@@ -68,6 +72,10 @@ namespace DotNetChatServer
                     case NetIncomingMessageType.StatusChanged:
                         HandleStatusChanged(msg);
                         break;
+                    case NetIncomingMessageType.ConnectionApproval:
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
         }
@@ -76,21 +84,35 @@ namespace DotNetChatServer
         {
             var connectionStatus = (NetConnectionStatus) msg.ReadByte();
 
-            if (connectionStatus == NetConnectionStatus.Connected)
+            switch (connectionStatus)
             {
-                string memberName = msg.SenderConnection.RemoteHailMessage.ReadString();
-                var member = new Member(_currentMaxId++, msg.SenderEndpoint) {Name = memberName};
-                _member.Add(member);
-                Logger.Info("Member '{0}' joined the Chat", memberName);
-            }
-            else if (connectionStatus == NetConnectionStatus.Disconnected)
-            {
-                Member member = _member.FirstOrDefault(m => m.Ip == msg.SenderEndpoint);
-                if (member != null)
-                {
-                    _member.Remove(member);
-                    Logger.Info("Member '{0}' disconnected.", member.Name);
-                }
+                case NetConnectionStatus.Connected:
+                    {
+                        string memberName = msg.SenderConnection.RemoteHailMessage.ReadString();
+
+                        // TODO: what happens if the member is already connected?
+
+                        var member = new Member {Connection = msg.SenderConnection, Name = memberName};
+                        _members.Add(member);
+                        Logger.Info("Member '{0}' joined the Chat", memberName);
+
+                        OnMemberLogon(new MemberLogonEventArgs {LoggedOnMember = member});
+                        break;
+                    }
+                case NetConnectionStatus.Disconnected:
+                    {
+                        var member = _members.FirstOrDefault(m => m.Connection == msg.SenderConnection);
+                        if (member != null)
+                        {
+                            _members.Remove(member);
+                            Logger.Info("Member '{0}' disconnected.", member.Name);
+                        }
+                        break;
+                    }
+                case NetConnectionStatus.RespondedConnect:
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -103,8 +125,23 @@ namespace DotNetChatServer
 
         public void Dispose()
         {
-            if (!Running)
+            if (_netServer.Status == NetPeerStatus.Starting || _netServer.Status == NetPeerStatus.Running)
                 Stop();
         }
+
+        private event MemberLogonHandler MemberLogon;
+
+        private void OnMemberLogon(MemberLogonEventArgs args)
+        {
+            MemberLogonHandler handler = MemberLogon;
+            if (handler != null) handler(this, args);
+        }
+    }
+
+    internal delegate void MemberLogonHandler(object sender, MemberLogonEventArgs args);
+
+    internal class MemberLogonEventArgs
+    {
+        public Member LoggedOnMember { get; set; }
     }
 }

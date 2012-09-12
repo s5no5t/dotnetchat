@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Principal;
 using System.Text;
 using Lidgren.Network;
 using DotNetChat.Properties;
@@ -12,6 +13,7 @@ namespace DotNetChat
     {
         private NetPeer _peer;
         private readonly NetPeerConfiguration _configuration;
+        private NetConnection _netConnection;
 
         public ChatService(string appIdentifier)
         {
@@ -36,8 +38,18 @@ namespace DotNetChat
                 {
                     case NetIncomingMessageType.StatusChanged:
                     case NetIncomingMessageType.DiscoveryRequest:
-                    case NetIncomingMessageType.DiscoveryResponse:
                         break;
+                    case NetIncomingMessageType.DiscoveryResponse:
+                        var message = _peer.CreateMessage();
+                        message.Write(WindowsIdentity.GetCurrent().Name);
+                        _netConnection = _peer.Connect(inc.SenderEndpoint, message);
+                        break;
+                    case NetIncomingMessageType.Data:
+                        var name = inc.ReadString();
+                        OnMemberJoined(new MemberJoinedHandlerArgs{Name = name});
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
         }
@@ -56,5 +68,20 @@ namespace DotNetChat
         {
             _peer.Shutdown("good bye");
         }
+
+        internal event MemberJoinedHandler MemberJoined;
+
+        private void OnMemberJoined(MemberJoinedHandlerArgs args)
+        {
+            MemberJoinedHandler handler = MemberJoined;
+            if (handler != null) handler(this, args);
+        }
+    }
+
+    internal delegate void MemberJoinedHandler(object sender, MemberJoinedHandlerArgs args);
+
+    internal class MemberJoinedHandlerArgs
+    {
+        public string Name { get; set; }
     }
 }

@@ -12,13 +12,18 @@ namespace DotNetChat
             InitializeComponent();
 
             _dotNetChatViewModel = new DotNetChatViewModel();
-            _dotNetChatViewModel.AddMember(new MemberViewModel(1) {Name = "Peter"});
-            _dotNetChatViewModel.AddChatEntry(new ChatEntryViewModel("Peter", "Hello World"));
 
             DataContext = _dotNetChatViewModel;
 
             _chatService = new ChatService(Properties.Settings.Default.AppIdentifier);
             _chatService.Connect(Properties.Settings.Default.Port);
+
+            _chatService.MemberJoined += AddMember;
+        }
+
+        private void AddMember(object sender, MemberJoinedHandlerArgs args)
+        {
+            _dotNetChatViewModel.AddMember(new MemberViewModel{Name = args.Name});
         }
 
         private void Button_Click(object sender, System.Windows.RoutedEventArgs e)

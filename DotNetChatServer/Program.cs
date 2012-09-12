@@ -10,9 +10,10 @@ namespace DotNetChatServer
     {
         static void Main(string[] args)
         {
-            using (var chatServer = new ChatServer())
+            using (var chatServer = new ChatServer(Properties.Settings.Default.AppIdentifier, 
+                                                   Properties.Settings.Default.Port))
             {
-                chatServer.Start(Properties.Settings.Default.AppIdentifier, Properties.Settings.Default.Port);
+                chatServer.Start();
 
                 while (true)
                 {

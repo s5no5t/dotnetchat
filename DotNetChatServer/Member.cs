@@ -1,18 +1,10 @@
-﻿
-using System.Net;
+using Lidgren.Network;
 
 namespace DotNetChatServer
 {
-    class Member
+    internal class Member
     {
         public string Name { get; set; }
-        public int Id { get; private set; }
-        public IPEndPoint Ip { get; private set; }
-
-        public Member(int id, IPEndPoint ip)
-        {
-            Id = id;
-            Ip = ip;
-        }
+        public NetConnection Connection { get; set; }
     }
 }
