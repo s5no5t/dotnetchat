@@ -10,6 +10,7 @@ namespace DotNetChat.ViewModels
         public ReadOnlyObservableCollection<MemberViewModel> Members {get{ return new ReadOnlyObservableCollection<MemberViewModel>(_members);}}
 
         private readonly ObservableCollection<ChatEntryViewModel> _chatEntries;
+
         public ReadOnlyObservableCollection<ChatEntryViewModel> ChatEntries { get { return new ReadOnlyObservableCollection<ChatEntryViewModel>(_chatEntries); } }
 
         public DotNetChatViewModel()
@@ -23,12 +24,18 @@ namespace DotNetChat.ViewModels
             _members.Add(member);
         }
 
+        public void RemoveMember(MemberViewModel member)
+        {
+            _members.Remove(member);
+        }
+
         public void AddChatEntry(ChatEntryViewModel chatEntry)
         {
             _chatEntries.Add(chatEntry);
         }
 
         private string _currentContent;
+
         public string CurrentContent
         {
             get { return _currentContent; }

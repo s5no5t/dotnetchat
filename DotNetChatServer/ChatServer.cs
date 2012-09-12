@@ -31,6 +31,7 @@ namespace DotNetChatServer
         private void UpdateBuddyLists(object sender, MemberLogonEventArgs args)
         {
             var message = _netServer.CreateMessage();
+            message.Write(MessageKinds.MemberJoined.ToString());
             message.Write(args.LoggedOnMember.Name);
             var recipients = _members.Where(m => m != args.LoggedOnMember).Select(m => m.Connection).ToList();
 
@@ -74,10 +75,38 @@ namespace DotNetChatServer
                         break;
                     case NetIncomingMessageType.ConnectionApproval:
                         break;
+                    case NetIncomingMessageType.Data:
+                        HandleData(msg);
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
             }
+        }
+
+        private void HandleData(NetIncomingMessage msg)
+        {
+            var messageKind = (MessageKinds) Enum.Parse(typeof(MessageKinds), msg.ReadString());
+            switch (messageKind)
+            {
+                case MessageKinds.MessageSent:
+                    var message = msg.ReadString();
+                    BroadcastMessage(message);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void BroadcastMessage(string message)
+        {
+            var msg = _netServer.CreateMessage();
+            msg.Write(MessageKinds.MessageReceived.ToString());
+            msg.Write(message);
+            var recipients = _members.Select(m => m.Connection).ToList();
+
+            if (recipients.Count > 0)
+                _netServer.SendMessage(msg, recipients, NetDeliveryMethod.ReliableUnordered, 0);
         }
 
         private void HandleStatusChanged(NetIncomingMessage msg)

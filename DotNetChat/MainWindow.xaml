@@ -33,7 +33,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <TextBox Grid.Row="1" MinHeight="150" Text="{Binding CurrentContent, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox x:Name="test"  Grid.Row="1" MinHeight="150" Text="{Binding CurrentContent, UpdateSourceTrigger=PropertyChanged}" />
             
             <Button Grid.Row="2" Content="Absenden" Click="Button_Click" />
         </Grid>

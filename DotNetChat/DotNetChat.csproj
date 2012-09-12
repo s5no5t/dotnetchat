@@ -103,6 +103,12 @@
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetChatServer\DotNetChatServer.csproj">
+      <Project>{E27C2C99-9A82-4B02-86C7-E29107C38EAF}</Project>
+      <Name>DotNetChatServer</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using DotNetChatServer;
 using Lidgren.Network;
 using DotNetChat.Properties;
 
@@ -45,8 +46,24 @@ namespace DotNetChat
                         _netConnection = _peer.Connect(inc.SenderEndpoint, message);
                         break;
                     case NetIncomingMessageType.Data:
-                        var name = inc.ReadString();
-                        OnMemberJoined(new MemberJoinedHandlerArgs{Name = name});
+                        var messageKind = (MessageKinds)Enum.Parse(typeof(MessageKinds), inc.ReadString());
+                        switch (messageKind)
+                        {
+                            case MessageKinds.MemberJoined:
+                                {
+                                    var name = inc.ReadString();
+                                    OnMemberJoined(new MemberJoinedHandlerArgs { Name = name });
+                                    break;
+                                }
+                            case MessageKinds.MemberLeft:
+                                {
+                                    var name = inc.ReadString();
+                                    OnMemberLeft(new MemberLeftHandlerArgs { Name = name });
+                                    break;
+                                }
+                            default:
+                                throw new NotImplementedException();
+                        }
                         break;
                     default:
                         throw new NotImplementedException();
@@ -54,15 +71,13 @@ namespace DotNetChat
             }
         }
 
-        //private void SendDiscoveryResponse()
-        //{
-        //    NetOutgoingMessage response = _server.CreateMessage();
-        //    response.Write(_serverName);
-        //    response.Write((byte)_clients.Count);
-        //    response.Write(_currentState != GameServerState.Lobby);
-        //    response.WritePadBits(7);
-        //    _server.SendDiscoveryResponse(response, serverMessage.SenderEndpoint);
-        //}
+        public void SendMessage(string message)
+        {
+            var netMessage = _peer.CreateMessage();
+            netMessage.Write(MessageKinds.MessageSent.ToString());
+            netMessage.Write(message);
+            _netConnection.SendMessage(netMessage, NetDeliveryMethod.ReliableUnordered, 0);
+        }
 
         public void Disconnect()
         {
@@ -70,12 +85,26 @@ namespace DotNetChat
         }
 
         internal event MemberJoinedHandler MemberJoined;
+        internal event MemberLeftHandler MemberLeft;
 
         private void OnMemberJoined(MemberJoinedHandlerArgs args)
         {
             MemberJoinedHandler handler = MemberJoined;
             if (handler != null) handler(this, args);
         }
+
+        private void OnMemberLeft(MemberLeftHandlerArgs args)
+        {
+            MemberLeftHandler handler = MemberLeft;
+            if (handler != null) handler(this, args);
+        }
+    }
+
+    internal delegate void MemberLeftHandler(object sender, MemberLeftHandlerArgs args);
+
+    internal class MemberLeftHandlerArgs
+    {
+        public string Name { get; set; }
     }
 
     internal delegate void MemberJoinedHandler(object sender, MemberJoinedHandlerArgs args);
