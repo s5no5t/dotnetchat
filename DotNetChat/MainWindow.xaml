@@ -18,6 +18,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <ListView ItemsSource="{Binding ChatEntries}">
@@ -32,7 +33,9 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <TextBox Grid.Row="1" MinHeight="150" Text="{Binding CurrentContent,UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Grid.Row="1" MinHeight="150" Text="{Binding CurrentContent, UpdateSourceTrigger=PropertyChanged}" />
+            
+            <Button Grid.Row="2" Content="Absenden" Click="Button_Click" />
         </Grid>
     </Grid>
 </Window>
