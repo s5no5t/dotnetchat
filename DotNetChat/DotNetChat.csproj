@@ -62,7 +62,7 @@
     <Compile Include="ChatModel\ChatModel.cs" />
     <Compile Include="ViewModels\ChatEntryViewModel.cs" />
     <Compile Include="ViewModels\MemberViewModel.cs" />
-    <Compile Include="ViewModels\MToolChatViewModel.cs" />
+    <Compile Include="ViewModels\DotNetChatViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -4,7 +4,7 @@ using DotNetChat.Framework;
 
 namespace DotNetChat.ViewModels
 {
-    class MToolChatViewModel : ViewModel
+    class DotNetChatViewModel : ViewModel
     {
         private readonly ObservableCollection<MemberViewModel> _members;
         public ReadOnlyObservableCollection<MemberViewModel> Members {get{ return new ReadOnlyObservableCollection<MemberViewModel>(_members);}}
@@ -12,7 +12,7 @@ namespace DotNetChat.ViewModels
         private readonly ObservableCollection<ChatEntryViewModel> _chatEntries;
         public ReadOnlyObservableCollection<ChatEntryViewModel> ChatEntries { get { return new ReadOnlyObservableCollection<ChatEntryViewModel>(_chatEntries); } }
 
-        public MToolChatViewModel()
+        public DotNetChatViewModel()
         {
             _members = new ObservableCollection<MemberViewModel>();
             _chatEntries = new ObservableCollection<ChatEntryViewModel>();
