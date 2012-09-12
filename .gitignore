@@ -1,0 +1,9 @@
+# git ignore file
+DotNetChat/bin/*
+DotNetChat/obj/*
+DotNetChatServer/bin/*
+DotNetChatServer/obj/*
+_ReSharper.DotNetChatServer/*
+DotNetChatServer.*.ReSharper.user
+DotNetChatServer.sln.docstates.suo
+DotNetChatServer.suo
