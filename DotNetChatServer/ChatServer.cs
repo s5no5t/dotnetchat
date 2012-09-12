@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DotNetChatServer.Properties;
 using Lidgren.Network;
+using NLog;
 
 namespace DotNetChatServer
 {
@@ -11,6 +12,8 @@ namespace DotNetChatServer
         private int _currentMaxId;
         private List<Member> _member;
         private NetServer _netServer;
+
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public bool Running { get; private set; }
 
@@ -28,7 +31,7 @@ namespace DotNetChatServer
 
             _netServer = new NetServer(peerConfiguration);
 
-            Console.Write("Starting Server...");
+            Logger.Info("Starting server.");
 
             Settings.Default.AppIdentifier = appIdentifier;
             Settings.Default.Port = port;
@@ -38,8 +41,8 @@ namespace DotNetChatServer
             _currentMaxId = 1;
 
             _netServer.Start();
-            Console.WriteLine("done");
-            Console.WriteLine("ServerName: '{0}' Port: {1}", Settings.Default.ServerName, port);
+
+            Logger.Info("Server name: '{0}' Port: {1}", Settings.Default.ServerName, port);
             Running = true;
         }
 
@@ -48,6 +51,7 @@ namespace DotNetChatServer
             if (!Running)
                 throw new InvalidOperationException("Server is not running.");
 
+            Logger.Info("Stopping server.");
             _netServer.Shutdown("good bye");
         }
 
@@ -77,7 +81,7 @@ namespace DotNetChatServer
                 string memberName = msg.SenderConnection.RemoteHailMessage.ReadString();
                 var member = new Member(_currentMaxId++, msg.SenderEndpoint) {Name = memberName};
                 _member.Add(member);
-                Console.WriteLine("Member '{0}' joined the Chat", memberName);
+                Logger.Info("Member '{0}' joined the Chat", memberName);
             }
             else if (connectionStatus == NetConnectionStatus.Disconnected)
             {
@@ -85,7 +89,7 @@ namespace DotNetChatServer
                 if (member != null)
                 {
                     _member.Remove(member);
-                    Console.WriteLine("Member '{0}' disconnected.", member.Name);
+                    Logger.Info("Member '{0}' disconnected.", member.Name);
                 }
             }
         }
