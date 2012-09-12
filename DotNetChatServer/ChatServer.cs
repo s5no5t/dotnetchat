@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using DotNetChatServer.Properties;
@@ -7,34 +6,27 @@ using Lidgren.Network;
 
 namespace DotNetChatServer
 {
-    class ChatServer
+    internal class ChatServer : IDisposable
     {
-        private NetServer _netServer;
-        private List<Member> _member;
         private int _currentMaxId;
+        private List<Member> _member;
+        private NetServer _netServer;
 
-        public ChatServer()
-        {
-            StartServer(Settings.Default.AppIdentifier, Settings.Default.Port);
-        }
+        public bool Running { get; private set; }
 
-        public void StartServer(string appIdentifier, int port)
+        public void Start(string appIdentifier, int port)
         {
-            if (_netServer == null)
-            {
-                var peerConfiguration = new NetPeerConfiguration(appIdentifier)
-                {
-                    AcceptIncomingConnections = true,
-                    Port = port,
-                };
-                _netServer = new NetServer(peerConfiguration);
-            }
-            else
-            {
-                Console.Write("Shutdown current server...");
-                _netServer.Shutdown("");
-                Console.WriteLine("done");
-            }
+            if (Running)
+                throw new InvalidOperationException("Server is already running.");
+
+            var peerConfiguration = new NetPeerConfiguration(appIdentifier)
+                                        {
+                                            AcceptIncomingConnections = true,
+                                            Port = port,
+                                        };
+            peerConfiguration.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
+
+            _netServer = new NetServer(peerConfiguration);
 
             Console.Write("Starting Server...");
 
@@ -44,14 +36,20 @@ namespace DotNetChatServer
 
             _member = new List<Member>();
             _currentMaxId = 1;
-   
+
             _netServer.Start();
             Console.WriteLine("done");
             Console.WriteLine("ServerName: '{0}' Port: {1}", Settings.Default.ServerName, port);
             Running = true;
         }
 
-        public bool Running { get; private set; }
+        public void Stop()
+        {
+            if (!Running)
+                throw new InvalidOperationException("Server is not running.");
+
+            _netServer.Shutdown("good bye");
+        }
 
         public void Update()
         {
@@ -72,12 +70,12 @@ namespace DotNetChatServer
 
         private void HandleStatusChanged(NetIncomingMessage msg)
         {
-            NetConnectionStatus connectionStatus = (NetConnectionStatus)msg.ReadByte();
+            var connectionStatus = (NetConnectionStatus) msg.ReadByte();
 
             if (connectionStatus == NetConnectionStatus.Connected)
             {
                 string memberName = msg.SenderConnection.RemoteHailMessage.ReadString();
-                Member member = new Member(_currentMaxId++, msg.SenderEndpoint) {Name = memberName};
+                var member = new Member(_currentMaxId++, msg.SenderEndpoint) {Name = memberName};
                 _member.Add(member);
                 Console.WriteLine("Member '{0}' joined the Chat", memberName);
             }
@@ -97,6 +95,12 @@ namespace DotNetChatServer
             NetOutgoingMessage response = _netServer.CreateMessage();
             response.Write(Settings.Default.ServerName);
             _netServer.SendDiscoveryResponse(response, msg.SenderEndpoint);
+        }
+
+        public void Dispose()
+        {
+            if (!Running)
+                Stop();
         }
     }
 }

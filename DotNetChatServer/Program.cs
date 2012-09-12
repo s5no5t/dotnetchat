@@ -10,12 +10,15 @@ namespace DotNetChatServer
     {
         static void Main(string[] args)
         {
-            ChatServer chatServer = new ChatServer();
-
-            while(true)
+            using (var chatServer = new ChatServer())
             {
-                chatServer.Update();
-                Thread.Sleep(200);
+                chatServer.Start(Properties.Settings.Default.AppIdentifier, Properties.Settings.Default.Port);
+
+                while (true)
+                {
+                    chatServer.Update();
+                    Thread.Sleep(200);
+                }
             }
         }
     }
