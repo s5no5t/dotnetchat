@@ -51,7 +51,6 @@
   <ItemGroup>
     <Compile Include="ChatServer.cs" />
     <Compile Include="Member.cs" />
-    <Compile Include="MessageKinds.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -73,6 +72,12 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetChatShared\DotNetChatShared.csproj">
+      <Project>{6A161120-53E5-4737-842E-F3DB9A7FEC7C}</Project>
+      <Name>DotNetChatShared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

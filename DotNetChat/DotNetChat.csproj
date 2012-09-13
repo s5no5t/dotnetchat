@@ -104,9 +104,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DotNetChatServer\DotNetChatServer.csproj">
-      <Project>{E27C2C99-9A82-4B02-86C7-E29107C38EAF}</Project>
-      <Name>DotNetChatServer</Name>
+    <ProjectReference Include="..\DotNetChatShared\DotNetChatShared.csproj">
+      <Project>{6A161120-53E5-4737-842E-F3DB9A7FEC7C}</Project>
+      <Name>DotNetChatShared</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

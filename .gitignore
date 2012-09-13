@@ -3,6 +3,8 @@ DotNetChat/bin/*
 DotNetChat/obj/*
 DotNetChatServer/bin/*
 DotNetChatServer/obj/*
+DotNetChatShared/bin/*
+DotNetChatShared/obj/*
 _ReSharper.DotNetChatServer/*
 DotNetChatServer.*.ReSharper.user
 DotNetChatServer.sln.docstates.suo

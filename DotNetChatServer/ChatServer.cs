@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotNetChatServer.Properties;
+using DotNetChatShared;
 using Lidgren.Network;
 using NLog;
 
@@ -31,7 +32,7 @@ namespace DotNetChatServer
         private void UpdateBuddyLists(object sender, MemberLogonEventArgs args)
         {
             var message = _netServer.CreateMessage();
-            message.Write(MessageKinds.MemberJoined.ToString());
+            message.Write(DataMessageType.MemberJoined.ToString());
             message.Write(args.LoggedOnMember.Name);
             var recipients = _members.Where(m => m != args.LoggedOnMember).Select(m => m.Connection).ToList();
 
@@ -86,10 +87,10 @@ namespace DotNetChatServer
 
         private void HandleData(NetIncomingMessage msg)
         {
-            var messageKind = (MessageKinds) Enum.Parse(typeof(MessageKinds), msg.ReadString());
+            var messageKind = (DataMessageType)Enum.Parse(typeof(DataMessageType), msg.ReadString());
             switch (messageKind)
             {
-                case MessageKinds.MessageSent:
+                case DataMessageType.MessageSent:
                     var message = msg.ReadString();
                     BroadcastMessage(message);
                     break;
@@ -101,7 +102,7 @@ namespace DotNetChatServer
         private void BroadcastMessage(string message)
         {
             var msg = _netServer.CreateMessage();
-            msg.Write(MessageKinds.MessageReceived.ToString());
+            msg.Write(DataMessageType.MessageReceived.ToString());
             msg.Write(message);
             _netServer.SendToAll(msg, NetDeliveryMethod.ReliableUnordered);
         }

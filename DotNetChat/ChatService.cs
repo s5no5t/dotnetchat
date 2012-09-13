@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Security.Principal;
-using DotNetChatServer;
+using DotNetChatShared;
 using Lidgren.Network;
 
 namespace DotNetChat
@@ -9,7 +9,6 @@ namespace DotNetChat
     {
         private NetClient _netClient;
         private readonly NetPeerConfiguration _configuration;
-        private NetConnection _netConnection;
 
         public ChatService(string appIdentifier)
         {
@@ -36,35 +35,10 @@ namespace DotNetChat
                     case NetIncomingMessageType.DiscoveryRequest:
                         break;
                     case NetIncomingMessageType.DiscoveryResponse:
-                        var message = _netClient.CreateMessage();
-                        message.Write(WindowsIdentity.GetCurrent().Name);
-                        _netClient.Connect(inc.SenderEndpoint, message);
+                        HandleDiscoveryResponse(inc);
                         break;
                     case NetIncomingMessageType.Data:
-                        var messageKind = (MessageKinds)Enum.Parse(typeof(MessageKinds), inc.ReadString());
-                        switch (messageKind)
-                        {
-                            case MessageKinds.MemberJoined:
-                                {
-                                    var name = inc.ReadString();
-                                    OnMemberJoined(new MemberJoinedHandlerArgs { Name = name });
-                                    break;
-                                }
-                            case MessageKinds.MemberLeft:
-                                {
-                                    var name = inc.ReadString();
-                                    OnMemberLeft(new MemberLeftHandlerArgs { Name = name });
-                                    break;
-                                }
-                            case MessageKinds.MessageReceived:
-                                {
-                                    var content = inc.ReadString();
-                                    OnMessageReceived(new MessageReceivedHandlerArgs { Content = content });
-                                    break;
-                                }
-                            default:
-                                throw new NotImplementedException();
-                        }
+                        HandleDataMessages(inc);
                         break;
                     case NetIncomingMessageType.WarningMessage:
                         break;
@@ -74,10 +48,34 @@ namespace DotNetChat
             }
         }
 
+        private void HandleDiscoveryResponse(NetIncomingMessage inc)
+        {
+            _netClient.Connect(inc.SenderEndpoint, _netClient.CreateMessage(WindowsIdentity.GetCurrent().Name));
+        }
+
+        private void HandleDataMessages(NetIncomingMessage inc)
+        {
+            var messageKind = (DataMessageType)Enum.Parse(typeof(DataMessageType), inc.ReadString());
+            switch (messageKind)
+            {
+                case DataMessageType.MemberJoined:
+                    OnMemberJoined(new MemberJoinedHandlerArgs { Name = inc.ReadString() });
+                    break;
+                case DataMessageType.MemberLeft:
+                    OnMemberLeft(new MemberLeftHandlerArgs { Name = inc.ReadString() });
+                    break;
+                case DataMessageType.MessageReceived:
+                    OnMessageReceived(new MessageReceivedHandlerArgs { Content = inc.ReadString() });
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         public void SendMessage(string message)
         {
             var netMessage = _netClient.CreateMessage();
-            netMessage.Write(MessageKinds.MessageSent.ToString());
+            netMessage.Write(DataMessageType.MessageSent.ToString());
             netMessage.Write(message);
             _netClient.SendMessage(netMessage, _netClient.ServerConnection, NetDeliveryMethod.ReliableUnordered);
         }
