@@ -61,6 +61,12 @@ namespace DotNetChat
                                     OnMemberLeft(new MemberLeftHandlerArgs { Name = name });
                                     break;
                                 }
+                            case MessageKinds.MessageReceived:
+                                {
+                                    var content = inc.ReadString();
+                                    OnMessageReceived(new MessageReceivedHandlerArgs { Content = content });
+                                    break;
+                                }
                             default:
                                 throw new NotImplementedException();
                         }
@@ -84,8 +90,15 @@ namespace DotNetChat
             _peer.Shutdown("good bye");
         }
 
+        internal event MessageReceivedHandler MessageReceived;
         internal event MemberJoinedHandler MemberJoined;
         internal event MemberLeftHandler MemberLeft;
+
+        private void OnMessageReceived(MessageReceivedHandlerArgs args)
+        {
+            MessageReceivedHandler handler = MessageReceived;
+            if (handler != null) handler(this, args);
+        }
 
         private void OnMemberJoined(MemberJoinedHandlerArgs args)
         {
@@ -98,6 +111,13 @@ namespace DotNetChat
             MemberLeftHandler handler = MemberLeft;
             if (handler != null) handler(this, args);
         }
+    }
+
+    internal delegate void MessageReceivedHandler(object sender, MessageReceivedHandlerArgs args);
+
+    internal class MessageReceivedHandlerArgs
+    {
+        public string Content { get; set; }
     }
 
     internal delegate void MemberLeftHandler(object sender, MemberLeftHandlerArgs args);

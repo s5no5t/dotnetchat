@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DotNetChat.ViewModels;
 
 namespace DotNetChat
@@ -21,6 +22,12 @@ namespace DotNetChat
 
             _chatService.MemberJoined += AddMember;
             _chatService.MemberLeft += RemoveMember;
+            _chatService.MessageReceived += MessageReceived;
+        }
+
+        private void MessageReceived(object sender, MessageReceivedHandlerArgs args)
+        {
+            _dotNetChatViewModel.AddChatEntry(new ChatEntryViewModel("", args.Content));
         }
 
         private void AddMember(object sender, MemberJoinedHandlerArgs args)

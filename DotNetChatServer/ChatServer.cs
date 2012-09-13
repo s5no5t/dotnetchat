@@ -103,10 +103,7 @@ namespace DotNetChatServer
             var msg = _netServer.CreateMessage();
             msg.Write(MessageKinds.MessageReceived.ToString());
             msg.Write(message);
-            var recipients = _members.Select(m => m.Connection).ToList();
-
-            if (recipients.Count > 0)
-                _netServer.SendMessage(msg, recipients, NetDeliveryMethod.ReliableUnordered, 0);
+            _netServer.SendToAll(msg, NetDeliveryMethod.ReliableUnordered);
         }
 
         private void HandleStatusChanged(NetIncomingMessage msg)
