@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Security.Principal;
-using System.Text;
 using DotNetChatServer;
 using Lidgren.Network;
-using DotNetChat.Properties;
 
 namespace DotNetChat
 {
     class ChatService
     {
-        private NetPeer _peer;
+        private NetClient _netClient;
         private readonly NetPeerConfiguration _configuration;
         private NetConnection _netConnection;
 
@@ -24,16 +19,16 @@ namespace DotNetChat
 
         public void Connect(int port)
         {
-            _peer = new NetPeer(_configuration);
-            _peer.RegisterReceivedCallback(HandleMessages);
-            _peer.Start();
-            _peer.DiscoverLocalPeers(port);
+            _netClient = new NetClient(_configuration);
+            _netClient.RegisterReceivedCallback(HandleMessages);
+            _netClient.Start();
+            _netClient.DiscoverLocalPeers(port);
         }
 
         private void HandleMessages(object state)
         {
             NetIncomingMessage inc;
-            while ((inc = _peer.ReadMessage()) != null)
+            while ((inc = _netClient.ReadMessage()) != null)
             {
                 switch (inc.MessageType)
                 {
@@ -41,9 +36,9 @@ namespace DotNetChat
                     case NetIncomingMessageType.DiscoveryRequest:
                         break;
                     case NetIncomingMessageType.DiscoveryResponse:
-                        var message = _peer.CreateMessage();
+                        var message = _netClient.CreateMessage();
                         message.Write(WindowsIdentity.GetCurrent().Name);
-                        _netConnection = _peer.Connect(inc.SenderEndpoint, message);
+                        _netClient.Connect(inc.SenderEndpoint, message);
                         break;
                     case NetIncomingMessageType.Data:
                         var messageKind = (MessageKinds)Enum.Parse(typeof(MessageKinds), inc.ReadString());
@@ -71,6 +66,8 @@ namespace DotNetChat
                                 throw new NotImplementedException();
                         }
                         break;
+                    case NetIncomingMessageType.WarningMessage:
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
@@ -79,15 +76,15 @@ namespace DotNetChat
 
         public void SendMessage(string message)
         {
-            var netMessage = _peer.CreateMessage();
+            var netMessage = _netClient.CreateMessage();
             netMessage.Write(MessageKinds.MessageSent.ToString());
             netMessage.Write(message);
-            _netConnection.SendMessage(netMessage, NetDeliveryMethod.ReliableUnordered, 0);
+            _netClient.SendMessage(netMessage, _netClient.ServerConnection, NetDeliveryMethod.ReliableUnordered);
         }
 
         public void Disconnect()
         {
-            _peer.Shutdown("good bye");
+            _netClient.Shutdown("good bye");
         }
 
         internal event MessageReceivedHandler MessageReceived;

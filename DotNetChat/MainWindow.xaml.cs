@@ -13,13 +13,12 @@ namespace DotNetChat
         {
             InitializeComponent();
 
-            _dotNetChatViewModel = new DotNetChatViewModel();
+            _chatService = new ChatService(Properties.Settings.Default.AppIdentifier);
 
+            _dotNetChatViewModel = new DotNetChatViewModel(_chatService);
             DataContext = _dotNetChatViewModel;
 
-            _chatService = new ChatService(Properties.Settings.Default.AppIdentifier);
             _chatService.Connect(Properties.Settings.Default.Port);
-
             _chatService.MemberJoined += AddMember;
             _chatService.MemberLeft += RemoveMember;
             _chatService.MessageReceived += MessageReceived;
@@ -38,11 +37,6 @@ namespace DotNetChat
         private void RemoveMember(object sender, MemberLeftHandlerArgs args)
         {
             _dotNetChatViewModel.RemoveMember(_dotNetChatViewModel.Members.First(m => m.Name == args.Name));
-        }
-
-        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            _chatService.SendMessage(test.Text);
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
