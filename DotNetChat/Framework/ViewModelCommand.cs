@@ -6,7 +6,7 @@ namespace DotNetChat.Framework
     class ViewModelCommand : ICommand
     {
         private bool _executable;
-        private Action _action;
+        private readonly Action _action;
 
         public bool Executable
         {

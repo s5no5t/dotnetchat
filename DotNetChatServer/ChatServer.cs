@@ -34,7 +34,9 @@ namespace DotNetChatServer
             var message = _netServer.CreateMessage();
             message.Write(DataMessageType.MemberJoined.ToString());
             message.Write(args.LoggedOnMember.Name);
-            var recipients = _members.Where(m => m != args.LoggedOnMember).Select(m => m.Connection).ToList();
+            // TODO: have yourself in the list or not?
+            //var recipients = _members.Where(m => m != args.LoggedOnMember).Select(m => m.Connection).ToList();
+            var recipients = _members.Select(m => m.Connection).ToList();
 
             if (recipients.Count > 0)
                 _netServer.SendMessage(message, recipients, NetDeliveryMethod.ReliableUnordered, 0);
@@ -92,17 +94,18 @@ namespace DotNetChatServer
             {
                 case DataMessageType.MessageSent:
                     var message = msg.ReadString();
-                    BroadcastMessage(message);
+                    BroadcastMessage(msg.SenderConnection, message);
                     break;
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        private void BroadcastMessage(string message)
+        private void BroadcastMessage(NetConnection senderConnection, string message)
         {
             var msg = _netServer.CreateMessage();
             msg.Write(DataMessageType.MessageReceived.ToString());
+            msg.Write(_members.FirstOrDefault(m => m.Connection == senderConnection).Name);
             msg.Write(message);
             _netServer.SendToAll(msg, NetDeliveryMethod.ReliableUnordered);
         }

@@ -1,41 +1,89 @@
 ﻿<Window x:Class="DotNetChat.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="mToolChat" Height="350" Width="525">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        
-        <ListView 
-            MinWidth="100" 
-            ItemsSource="{Binding Members}" 
-            DisplayMemberPath="Name">
-        </ListView>
-        
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:ViewModels="clr-namespace:DotNetChat.ViewModels"
+        xmlns:Converter="clr-namespace:DotNetChat.Converter" xmlns:local="clr-namespace:DotNetChat"
+        xmlns:UserControls="clr-namespace:DotNetChat.UserControls"
+        d:DataContext="{d:DesignInstance ViewModels:DotNetChatViewModel, IsDesignTimeCreatable=False}"
+        Height="350" Width="525">
+    
+    <Window.Resources>
+        <Converter:ConnectedStateConverter x:Key="connectedStateConverter" />
+        <!--<Converter:ConnectedToVisibilityConverter x:Key="connectedToVisibilityConverter" />-->
+    </Window.Resources>
+    
+    <Window.Style>
+        <Style TargetType="Window">
+            <Setter Property="Title" Value="{Binding IsConnected, StringFormat=mToolChat - {0}, 
+                                            Converter={StaticResource connectedStateConverter}}" />
+        </Style>
+    </Window.Style>
 
-            <ListView ItemsSource="{Binding ChatEntries}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Name}" />
-                            <TextBlock Text=":" Margin="2,0"/>
-                            <TextBlock Text="{Binding Content}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
+    <Grid>
+        <!-- TODO: use progress bar until connected -->
+        <!--<Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>-->
+
+        <!--Visibility="{Binding IsConnected, Converter={StaticResource connectedToVisibilityConverter}}"-->
+        
+        <Grid Grid.Row="0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
+            <ListView 
+                MinWidth="100" 
+                ItemsSource="{Binding Members}" 
+                DisplayMemberPath="Name"
+                Grid.Column="0">
             </ListView>
 
-            <TextBox Grid.Row="1" MinHeight="150" Text="{Binding CurrentContent, UpdateSourceTrigger=PropertyChanged}" />
-            
-            <Button Grid.Row="2" Content="Absenden" Command="{Binding SendMessageCommand}" />
+            <GridSplitter Grid.Column="0" Width="10"/>
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <ListView ItemsSource="{Binding ChatEntries}"
+                      Grid.Row="0">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text=":" Margin="2,0"/>
+                                <TextBlock Text="{Binding Content}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <GridSplitter Grid.Row="1" Height="10" ResizeDirection="Rows" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+
+                <TextBox Grid.Row="2" Text="{Binding CurrentContent, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown" KeyUp="TextBox_KeyUp" />
+
+                <Button Grid.Row="3" Content="Absenden" Command="{Binding SendMessageCommand}" IsEnabled="{Binding IsConnected}" />
+            </Grid>
         </Grid>
+
+        <!-- TODO: use progress bar until connected -->
+        <!--<Grid Grid.Row="1" >
+            <Viewbox Width="200" Height="200"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <UserControls:CircularProgressBar />
+            </Viewbox>
+        </Grid>-->
+
     </Grid>
+
 </Window>

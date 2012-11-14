@@ -8,10 +8,10 @@ namespace DotNetChat.ViewModels
     {
         public ViewModelCommand SendMessageCommand { get; private set; }
 
-        private ChatService _chatService;
+        private readonly ChatService _chatService;
 
         private readonly ObservableCollection<MemberViewModel> _members;
-        public ReadOnlyObservableCollection<MemberViewModel> Members {get{ return new ReadOnlyObservableCollection<MemberViewModel>(_members);}}
+        public ReadOnlyObservableCollection<MemberViewModel> Members { get { return new ReadOnlyObservableCollection<MemberViewModel>(_members);}}
 
         private readonly ObservableCollection<ChatEntryViewModel> _chatEntries;
         public ReadOnlyObservableCollection<ChatEntryViewModel> ChatEntries { get { return new ReadOnlyObservableCollection<ChatEntryViewModel>(_chatEntries); } }
@@ -28,6 +28,7 @@ namespace DotNetChat.ViewModels
         private void SendMessageExecute()
         {
             _chatService.SendMessage(CurrentContent);
+            CurrentContent = "";
         }
 
         public void AddMember(MemberViewModel member)
@@ -57,6 +58,18 @@ namespace DotNetChat.ViewModels
                     _currentContent = value;
                     FirePropertyChanged("CurrentContent");
                 }
+            }
+        }
+
+        public bool IsConnected
+        {
+            get
+            {
+                return _chatService.IsConnected();
+            }
+            set
+            {
+                FirePropertyChanged("IsConnected");    
             }
         }
     }

@@ -24,6 +24,11 @@ namespace DotNetChat
             _netClient.DiscoverLocalPeers(port);
         }
 
+        public bool IsConnected()
+        {
+            return _netClient.ConnectionStatus == NetConnectionStatus.Connected;
+        }
+
         private void HandleMessages(object state)
         {
             NetIncomingMessage inc;
@@ -32,6 +37,8 @@ namespace DotNetChat
                 switch (inc.MessageType)
                 {
                     case NetIncomingMessageType.StatusChanged:
+                        HandleStatusChanged();
+                        break;
                     case NetIncomingMessageType.DiscoveryRequest:
                         break;
                     case NetIncomingMessageType.DiscoveryResponse:
@@ -46,6 +53,23 @@ namespace DotNetChat
                         throw new NotImplementedException();
                 }
             }
+        }
+
+        private void HandleStatusChanged()
+        {
+            switch (_netClient.ConnectionStatus)
+            {
+                    case NetConnectionStatus.Connected:
+                    OnConnected();
+                    break;
+            }
+        }
+
+        private void OnConnected()
+        {
+            ConnectedHandler handler = Connected;
+            if (handler != null)
+                handler(this, new EventArgs());
         }
 
         private void HandleDiscoveryResponse(NetIncomingMessage inc)
@@ -65,7 +89,7 @@ namespace DotNetChat
                     OnMemberLeft(new MemberLeftHandlerArgs { Name = inc.ReadString() });
                     break;
                 case DataMessageType.MessageReceived:
-                    OnMessageReceived(new MessageReceivedHandlerArgs { Content = inc.ReadString() });
+                    OnMessageReceived(new MessageReceivedHandlerArgs { Name = inc.ReadString(), Content = inc.ReadString() });
                     break;
                 default:
                     throw new NotImplementedException();
@@ -74,6 +98,9 @@ namespace DotNetChat
 
         public void SendMessage(string message)
         {
+            if (string.IsNullOrEmpty(message))
+                return;
+
             var netMessage = _netClient.CreateMessage();
             netMessage.Write(DataMessageType.MessageSent.ToString());
             netMessage.Write(message);
@@ -88,6 +115,7 @@ namespace DotNetChat
         internal event MessageReceivedHandler MessageReceived;
         internal event MemberJoinedHandler MemberJoined;
         internal event MemberLeftHandler MemberLeft;
+        internal event ConnectedHandler Connected;
 
         private void OnMessageReceived(MessageReceivedHandlerArgs args)
         {
@@ -113,6 +141,7 @@ namespace DotNetChat
     internal class MessageReceivedHandlerArgs
     {
         public string Content { get; set; }
+        public string Name { get; set; }
     }
 
     internal delegate void MemberLeftHandler(object sender, MemberLeftHandlerArgs args);
@@ -128,4 +157,6 @@ namespace DotNetChat
     {
         public string Name { get; set; }
     }
+
+    internal delegate void ConnectedHandler(object sender, EventArgs args);
 }
