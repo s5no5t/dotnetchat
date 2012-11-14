@@ -4,34 +4,31 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        xmlns:ViewModels="clr-namespace:DotNetChat.ViewModels"
-        xmlns:Converter="clr-namespace:DotNetChat.Converter" xmlns:local="clr-namespace:DotNetChat"
-        xmlns:UserControls="clr-namespace:DotNetChat.UserControls"
-        d:DataContext="{d:DesignInstance ViewModels:DotNetChatViewModel, IsDesignTimeCreatable=False}"
+        xmlns:viewModels="clr-namespace:DotNetChat.ViewModels"
+        xmlns:converter="clr-namespace:DotNetChat.Converter"
+        xmlns:userControls="clr-namespace:DotNetChat.UserControls"
+        d:DataContext="{d:DesignInstance viewModels:DotNetChatViewModel, IsDesignTimeCreatable=False}"
         Height="350" Width="525">
     
     <Window.Resources>
-        <Converter:ConnectedStateConverter x:Key="connectedStateConverter" />
-        <!--<Converter:ConnectedToVisibilityConverter x:Key="connectedToVisibilityConverter" />-->
+        <converter:ConnectedStateConverter x:Key="ConnectedStateConverter" />
+        <converter:ConnectedToVisibilityConverter x:Key="ConnectedToVisibilityConverter" />
+        <converter:InverseConnectedToVisibilityConverter x:Key="InverseConnectedToVisibilityConverter" />
     </Window.Resources>
     
     <Window.Style>
         <Style TargetType="Window">
             <Setter Property="Title" Value="{Binding IsConnected, StringFormat=mToolChat - {0}, 
-                                            Converter={StaticResource connectedStateConverter}}" />
+                                            Converter={StaticResource ConnectedStateConverter}}" />
         </Style>
     </Window.Style>
 
     <Grid>
-        <!-- TODO: use progress bar until connected -->
-        <!--<Grid.RowDefinitions>
+        <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>-->
+        </Grid.RowDefinitions>
 
-        <!--Visibility="{Binding IsConnected, Converter={StaticResource connectedToVisibilityConverter}}"-->
-        
-        <Grid Grid.Row="0" >
+        <Grid Grid.Row="0" Visibility="{Binding IsConnected, Converter={StaticResource ConnectedToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -75,14 +72,22 @@
             </Grid>
         </Grid>
 
-        <!-- TODO: use progress bar until connected -->
-        <!--<Grid Grid.Row="1" >
-            <Viewbox Width="200" Height="200"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <UserControls:CircularProgressBar />
+        <Grid Grid.Row="0" 
+              Visibility="{Binding IsConnected, Converter={StaticResource InverseConnectedToVisibilityConverter}}" 
+              VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <Viewbox Grid.Row="0" Width="200" Height="200" Margin="10"
+                HorizontalAlignment="Center">
+                <userControls:CircularProgressBar />
             </Viewbox>
-        </Grid>-->
+            
+            <TextBlock Grid.Row="1" HorizontalAlignment="Center" Margin="10" FontSize="20">Connecting</TextBlock>
+            
+        </Grid>
 
     </Grid>
 

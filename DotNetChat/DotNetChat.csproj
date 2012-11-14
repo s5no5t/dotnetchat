@@ -60,6 +60,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ChatService.cs" />
+    <Compile Include="Converter\InverseConnectedToVisibilityConverter.cs" />
     <Compile Include="UserControls\CircularProgressBar.xaml.cs">
       <DependentUpon>CircularProgressBar.xaml</DependentUpon>
     </Compile>

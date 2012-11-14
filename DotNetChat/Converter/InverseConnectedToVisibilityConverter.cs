@@ -5,12 +5,12 @@ using System.Windows.Data;
 
 namespace DotNetChat.Converter
 {
-    public class ConnectedToVisibilityConverter : IValueConverter
+    public class InverseConnectedToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var connected = (bool)value;
-            return connected ? Visibility.Visible : Visibility.Hidden;
+            return connected ? Visibility.Hidden : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
